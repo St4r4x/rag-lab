@@ -17,8 +17,10 @@ def make_generate(llm):
             return {"generation": "Je n'ai pas assez d'information dans la documentation indexée pour répondre."}
         context = "\n\n".join(doc.page_content for doc in state["documents"])
         response = llm.invoke(
-            "Answer the question using only the context below. "
-            "If the context is insufficient, say so.\n\n"
+            "You are answering a question using excerpts from official documentation. "
+            "Synthesize a clear answer from the context below, extracting and explaining "
+            "whatever relevant information it contains, even if partial. Only say the "
+            "context is insufficient if it is truly unrelated to the question.\n\n"
             f"Context:\n{context}\n\nQuestion: {state['question']}"
         )
         return {"generation": response.content}
