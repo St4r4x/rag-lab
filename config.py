@@ -2,10 +2,11 @@ import os
 from functools import lru_cache
 
 from dotenv import load_dotenv
+from fastembed.rerank.cross_encoder import TextCrossEncoder
 from langchain.chat_models import init_chat_model
 from langchain.embeddings import init_embeddings
 from langchain_core.embeddings import Embeddings
-from langchain_qdrant import QdrantVectorStore
+from langchain_qdrant import FastEmbedSparse, QdrantVectorStore, RetrievalMode
 from qdrant_client import QdrantClient
 
 load_dotenv()
@@ -13,6 +14,8 @@ load_dotenv()
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 QDRANT_COLLECTION = os.environ.get("QDRANT_COLLECTION", "langchain_docs")
 OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "")
+SPARSE_EMBEDDING_MODEL = os.environ.get("SPARSE_EMBEDDING_MODEL", "Qdrant/bm25")
+RERANKER_MODEL = os.environ.get("RERANKER_MODEL", "Xenova/ms-marco-MiniLM-L-6-v2")
 
 
 class _NomicPrefixedEmbeddings(Embeddings):
@@ -50,6 +53,10 @@ def get_embeddings():
     return embeddings
 
 
+def get_sparse_embeddings() -> FastEmbedSparse:
+    return FastEmbedSparse(model_name=SPARSE_EMBEDDING_MODEL)
+
+
 @lru_cache
 def get_vectorstore() -> QdrantVectorStore:
     client = QdrantClient(url=QDRANT_URL)
@@ -57,4 +64,11 @@ def get_vectorstore() -> QdrantVectorStore:
         client=client,
         collection_name=QDRANT_COLLECTION,
         embedding=get_embeddings(),
+        sparse_embedding=get_sparse_embeddings(),
+        retrieval_mode=RetrievalMode.HYBRID,
     )
+
+
+@lru_cache
+def get_reranker() -> TextCrossEncoder:
+    return TextCrossEncoder(model_name=RERANKER_MODEL)
