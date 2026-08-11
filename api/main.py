@@ -43,5 +43,5 @@ def query(request: QueryRequest):
     except Exception as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
-    sources = sorted({doc.metadata.get("path", "") for doc in result["documents"]})
+    sources = sorted({doc.metadata.get("url", "") for doc in result["documents"]})
     return QueryResponse(answer=result["generation"], sources=sources)

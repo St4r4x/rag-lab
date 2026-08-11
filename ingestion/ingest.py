@@ -17,6 +17,13 @@ SOURCES = {
     "langgraph": "src/oss/langgraph",
 }
 
+DOCS_BASE_URL = "https://docs.langchain.com/oss/python"
+
+
+def build_doc_url(relative_path: str) -> str:
+    trimmed = relative_path.removeprefix("src/oss/").removesuffix(".mdx").removesuffix(".md")
+    return f"{DOCS_BASE_URL}/{trimmed}"
+
 
 def clone_docs_repo(dest: Path) -> None:
     subprocess.run(
@@ -33,7 +40,14 @@ def load_markdown_files(repo_dir: Path, source: str, subpath: str) -> list[dict]
     for f in files:
         text = f.read_text(encoding="utf-8", errors="ignore")
         if text.strip():
-            pages.append({"text": text, "source": source, "path": str(f.relative_to(repo_dir))})
+            pages.append(
+                {
+                    "text": text,
+                    "source": source,
+                    "path": str(f.relative_to(repo_dir)),
+                    "url": build_doc_url(str(f.relative_to(repo_dir))),
+                }
+            )
     return pages
 
 
@@ -42,7 +56,14 @@ def chunk_pages(pages: list[dict]) -> list[dict]:
     chunks = []
     for page in pages:
         for chunk_text in splitter.split_text(page["text"]):
-            chunks.append({"text": chunk_text, "source": page["source"], "path": page["path"]})
+            chunks.append(
+                {
+                    "text": chunk_text,
+                    "source": page["source"],
+                    "path": page["path"],
+                    "url": page["url"],
+                }
+            )
     return chunks
 
 
@@ -67,7 +88,7 @@ def main() -> None:
     # add a collection-recreate/upsert-by-id step if re-ingestion becomes routine.
 
     texts = [c["text"] for c in all_chunks]
-    metadatas = [{"source": c["source"], "path": c["path"]} for c in all_chunks]
+    metadatas = [{"source": c["source"], "path": c["path"], "url": c["url"]} for c in all_chunks]
 
     QdrantVectorStore.from_texts(
         texts=texts,

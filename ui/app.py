@@ -2,6 +2,9 @@ import os
 
 import gradio as gr
 import httpx
+from dotenv import load_dotenv
+
+load_dotenv()
 
 API_URL = os.environ.get("RAG_API_URL", "http://localhost:8000")
 

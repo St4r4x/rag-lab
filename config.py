@@ -1,11 +1,14 @@
 import os
 from functools import lru_cache
 
+from dotenv import load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain.embeddings import init_embeddings
 from langchain_core.embeddings import Embeddings
 from langchain_qdrant import QdrantVectorStore
 from qdrant_client import QdrantClient
+
+load_dotenv()
 
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 QDRANT_COLLECTION = os.environ.get("QDRANT_COLLECTION", "langchain_docs")
