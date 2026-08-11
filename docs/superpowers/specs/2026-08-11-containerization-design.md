@@ -60,6 +60,11 @@ rag-lab/
 dans l'image d'exécution). Pas de `CMD` fixe ; chaque service du compose
 définit sa propre commande.
 
+`ingestion/ingest.py` appelle `git clone` en `subprocess` — `git` n'est pas
+présent dans `python:3.13-slim` par défaut. Le `Dockerfile` doit l'installer
+(`apt-get install -y --no-install-recommends git`) avant `pip install`,
+sinon le service `ingestion` échoue au premier `docker compose run`.
+
 **`config.py`** : ajout d'un support pour `OLLAMA_BASE_URL` (variable
 d'env optionnelle, vide par défaut). Quand elle est définie et que le
 provider sélectionné (`LLM_MODEL`/`EMBEDDING_MODEL`) commence par
