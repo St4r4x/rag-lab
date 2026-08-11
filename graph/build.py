@@ -4,9 +4,9 @@ from langchain_core.documents import Document
 from graph.state import RAGState
 
 
-def make_retrieve(vectorstore):
+def make_retrieve(vectorstore, k=4):
     def retrieve(state: RAGState) -> dict:
-        docs = vectorstore.similarity_search(state["question"], k=4)
+        docs = vectorstore.similarity_search(state["question"], k=k)
         return {"documents": docs}
 
     return retrieve
@@ -40,6 +40,8 @@ def build_graph_v1(llm, vectorstore):
 
 
 MAX_RETRIES = 2
+RETRIEVE_POOL_SIZE = 20
+RERANK_TOP_K = 4
 
 
 def make_grade_documents(llm):
@@ -57,6 +59,19 @@ def make_grade_documents(llm):
         return {"documents": relevant_docs}
 
     return grade_documents
+
+
+def make_rerank(reranker):
+    def rerank(state: RAGState) -> dict:
+        if not state["documents"]:
+            return {"documents": []}
+        scores = reranker.rerank(
+            state["question"], [doc.page_content for doc in state["documents"]]
+        )
+        ranked = sorted(zip(scores, state["documents"]), key=lambda pair: pair[0], reverse=True)
+        return {"documents": [doc for _, doc in ranked][:RERANK_TOP_K]}
+
+    return rerank
 
 
 def route_after_grade(state: RAGState) -> str:
@@ -78,14 +93,16 @@ def make_rewrite_query(llm):
     return rewrite_query
 
 
-def build_graph_v2(llm, vectorstore):
+def build_graph_v2(llm, vectorstore, reranker):
     graph = StateGraph(RAGState)
-    graph.add_node("retrieve", make_retrieve(vectorstore))
+    graph.add_node("retrieve", make_retrieve(vectorstore, k=RETRIEVE_POOL_SIZE))
+    graph.add_node("rerank", make_rerank(reranker))
     graph.add_node("grade_documents", make_grade_documents(llm))
     graph.add_node("rewrite_query", make_rewrite_query(llm))
     graph.add_node("generate", make_generate(llm))
     graph.add_edge(START, "retrieve")
-    graph.add_edge("retrieve", "grade_documents")
+    graph.add_edge("retrieve", "rerank")
+    graph.add_edge("rerank", "grade_documents")
     graph.add_conditional_edges(
         "grade_documents",
         route_after_grade,

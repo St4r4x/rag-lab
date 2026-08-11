@@ -7,6 +7,7 @@ from graph.build import (
     MAX_RETRIES,
     build_graph_v2,
     make_grade_documents,
+    make_rerank,
     route_after_grade,
 )
 
@@ -27,6 +28,14 @@ class FakeVectorStore:
     def similarity_search(self, _query, k=4):
         self.search_calls += 1
         return self.docs
+
+
+class FakeReranker:
+    def __init__(self, scores):
+        self.scores = scores
+
+    def rerank(self, _query, _documents):
+        return self.scores
 
 
 def test_route_after_grade_relevant_goes_to_generate():
@@ -60,10 +69,27 @@ def test_grade_documents_keeps_only_relevant_ones():
     assert result["documents"] == [relevant_doc]
 
 
+def test_rerank_sorts_by_score_and_keeps_top_k():
+    docs = [Document(page_content=f"doc{i}") for i in range(5)]
+    reranker = FakeReranker(scores=[0.1, 0.9, 0.5, 0.8, 0.2])
+    rerank = make_rerank(reranker)
+    state = {"question": "q", "documents": docs}
+    result = rerank(state)
+    assert result["documents"] == [docs[1], docs[3], docs[2], docs[4]]
+
+
+def test_rerank_handles_empty_documents():
+    rerank = make_rerank(FakeReranker(scores=[]))
+    state = {"question": "q", "documents": []}
+    result = rerank(state)
+    assert result["documents"] == []
+
+
 def test_graph_v2_falls_back_after_max_retries_without_infinite_loop():
     vectorstore = FakeVectorStore(docs=[Document(page_content="irrelevant")])
+    reranker = FakeReranker(scores=[1.0])
     llm = FakeLLM(responses=["no", "reformulated question 1", "no", "reformulated question 2", "no"])
-    graph = build_graph_v2(llm, vectorstore)
+    graph = build_graph_v2(llm, vectorstore, reranker)
 
     result = graph.invoke({"question": "what is x", "documents": [], "generation": "", "retries": 0})
 
