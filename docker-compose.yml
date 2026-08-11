@@ -16,6 +16,9 @@ services:
     command: uvicorn api.main:app --host 0.0.0.0 --port 8000
     ports:
       - "8000:8000"
+    env_file:
+      - path: .env
+        required: false
     environment:
       QDRANT_URL: http://qdrant:6333
       OLLAMA_BASE_URL: http://host.docker.internal:11434
@@ -30,6 +33,9 @@ services:
     command: python -m ui.app
     ports:
       - "7860:7860"
+    env_file:
+      - path: .env
+        required: false
     environment:
       RAG_API_URL: http://api:8000
       GRADIO_SERVER_NAME: "0.0.0.0"
@@ -40,6 +46,9 @@ services:
     build: .
     command: python -m ingestion.ingest
     profiles: ["tools"]
+    env_file:
+      - path: .env
+        required: false
     environment:
       QDRANT_URL: http://qdrant:6333
       OLLAMA_BASE_URL: http://host.docker.internal:11434

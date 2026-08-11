@@ -40,8 +40,9 @@ remplacé.
   fonctions qui prennent une string de config
   (`"ollama:llama3.1"` vs `"openai:gpt-4o-mini"`) et retournent l'objet
   compatible LangChain adapté au provider.
-- **Vector store** : Qdrant, lancé via Docker Compose (service unique). Une
-  collection `langchain_docs`.
+- **Vector store** : Qdrant, lancé via Docker Compose (voir
+  docs/superpowers/specs/2026-08-11-containerization-design.md pour
+  l'évolution vers 4 services). Une collection `langchain_docs`.
 - **Orchestration** : LangGraph (`StateGraph`).
 - **API** : FastAPI, endpoint `POST /query` + `GET /health`.
 - **UI** : Gradio `ChatInterface`, qui appelle l'API en HTTP plutôt que
