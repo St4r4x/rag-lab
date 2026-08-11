@@ -43,8 +43,9 @@ def make_grade_documents(llm):
     def grade_documents(state: RAGState) -> dict:
         docs_text = "\n\n".join(doc.page_content for doc in state["documents"])
         response = llm.invoke(
-            "Answer strictly 'yes' or 'no'. Does the context below contain enough "
-            "information to answer the question?\n\n"
+            "Answer strictly 'yes' or 'no'. Does the context below contain "
+            "information relevant to the question, even partially? Answer "
+            "'yes' unless the context is completely unrelated to the topic.\n\n"
             f"Question: {state['question']}\n\nContext:\n{docs_text}"
         )
         relevant = "yes" in response.content.strip().lower()
