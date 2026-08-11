@@ -1,3 +1,5 @@
+from functools import lru_cache
+
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from qdrant_client import QdrantClient
@@ -6,14 +8,11 @@ from config import QDRANT_URL, get_llm, get_vectorstore
 from graph.build import build_graph_v2
 
 app = FastAPI(title="rag-lab")
-_graph = None
 
 
+@lru_cache
 def get_graph():
-    global _graph
-    if _graph is None:
-        _graph = build_graph_v2(get_llm(), get_vectorstore())
-    return _graph
+    return build_graph_v2(get_llm(), get_vectorstore())
 
 
 class QueryRequest(BaseModel):
