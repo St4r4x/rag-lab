@@ -1,4 +1,5 @@
 from langgraph.graph import END, START, StateGraph
+from langchain_core.documents import Document
 
 from graph.state import RAGState
 
@@ -42,16 +43,18 @@ MAX_RETRIES = 2
 
 
 def make_grade_documents(llm):
-    def grade_documents(state: RAGState) -> dict:
-        docs_text = "\n\n".join(doc.page_content for doc in state["documents"])
+    def is_relevant(question: str, doc: Document) -> bool:
         response = llm.invoke(
             "Answer strictly 'yes' or 'no'. Does the context below contain "
             "information relevant to the question, even partially? Answer "
             "'yes' unless the context is completely unrelated to the topic.\n\n"
-            f"Question: {state['question']}\n\nContext:\n{docs_text}"
+            f"Question: {question}\n\nContext:\n{doc.page_content}"
         )
-        relevant = "yes" in response.content.strip().lower()
-        return {"documents": state["documents"] if relevant else []}
+        return "yes" in response.content.strip().lower()
+
+    def grade_documents(state: RAGState) -> dict:
+        relevant_docs = [doc for doc in state["documents"] if is_relevant(state["question"], doc)]
+        return {"documents": relevant_docs}
 
     return grade_documents
 

@@ -51,6 +51,15 @@ def test_grade_documents_marks_irrelevant_as_empty():
     assert result["documents"] == []
 
 
+def test_grade_documents_keeps_only_relevant_ones():
+    grade = make_grade_documents(FakeLLM(["yes", "no"]))
+    relevant_doc = Document(page_content="relevant text")
+    irrelevant_doc = Document(page_content="irrelevant text")
+    state = {"question": "q", "documents": [relevant_doc, irrelevant_doc]}
+    result = grade(state)
+    assert result["documents"] == [relevant_doc]
+
+
 def test_graph_v2_falls_back_after_max_retries_without_infinite_loop():
     vectorstore = FakeVectorStore(docs=[Document(page_content="irrelevant")])
     llm = FakeLLM(responses=["no", "reformulated question 1", "no", "reformulated question 2", "no"])
