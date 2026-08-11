@@ -87,7 +87,7 @@ __pycache__/
 - [ ] **Step 5: Write `.env.example`**
 
 ```
-LLM_MODEL=ollama:llama3.1
+LLM_MODEL=ollama:llama3.2:3b
 EMBEDDING_MODEL=ollama:nomic-embed-text
 QDRANT_URL=http://localhost:6333
 QDRANT_COLLECTION=langchain_docs
@@ -153,7 +153,7 @@ QDRANT_COLLECTION = os.environ.get("QDRANT_COLLECTION", "langchain_docs")
 
 
 def get_llm():
-    model = os.environ.get("LLM_MODEL", "ollama:llama3.1")
+    model = os.environ.get("LLM_MODEL", "ollama:llama3.2:3b")
     return init_chat_model(model)
 
 
@@ -174,7 +174,7 @@ def get_vectorstore() -> QdrantVectorStore:
 
 - [ ] **Step 2: Verify the LLM and embeddings factories work**
 
-Prerequisite: `ollama serve` running locally with `ollama pull llama3.1` and `ollama pull nomic-embed-text` done.
+Prerequisite: `ollama serve` running locally with `ollama pull llama3.2:3b` and `ollama pull nomic-embed-text` done.
 
 Run:
 ```bash
