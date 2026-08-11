@@ -107,6 +107,9 @@ services:
     ports: ["7860:7860"]
     environment:
       RAG_API_URL: http://api:8000
+      # Gradio defaults to binding 127.0.0.1 inside the container, unreachable
+      # through Docker's port mapping. Verified 2026-08-11.
+      GRADIO_SERVER_NAME: "0.0.0.0"
     depends_on: [api]
 
   ingestion:

@@ -259,6 +259,7 @@ services:
       - "7860:7860"
     environment:
       RAG_API_URL: http://api:8000
+      GRADIO_SERVER_NAME: "0.0.0.0"
     depends_on:
       - api
 
