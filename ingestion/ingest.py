@@ -54,7 +54,17 @@ def main() -> None:
         dest = Path(tmp) / "docs"
         clone_docs_repo(dest)
         for source, subpath in SOURCES.items():
-            all_chunks.extend(chunk_pages(load_markdown_files(dest, source, subpath)))
+            pages = load_markdown_files(dest, source, subpath)
+            if not pages:
+                raise RuntimeError(
+                    f"Source '{source}' (subpath '{subpath}') yielded 0 pages — "
+                    "check SOURCES paths against the docs repo layout."
+                )
+            all_chunks.extend(chunk_pages(pages))
+
+    # ponytail: from_texts() appends rather than upserting, so re-running this script
+    # duplicates points instead of replacing them. Fine for a one-shot lab ingestion;
+    # add a collection-recreate/upsert-by-id step if re-ingestion becomes routine.
 
     texts = [c["text"] for c in all_chunks]
     metadatas = [{"source": c["source"], "path": c["path"]} for c in all_chunks]
