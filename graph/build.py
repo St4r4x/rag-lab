@@ -29,6 +29,10 @@ def make_generate(llm):
     return generate
 
 
+# Note: build_graph_v1 demonstrates simple graph topology (retrieve → generate),
+# but shares the same hybrid vectorstore via config.get_vectorstore(), so retrieval
+# is not pure dense-only. Simpler topology only; for dense-only baseline, would need
+# a separate non-hybrid vectorstore factory.
 def build_graph_v1(llm, vectorstore):
     graph = StateGraph(RAGState)
     graph.add_node("retrieve", make_retrieve(vectorstore))
