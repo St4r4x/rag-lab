@@ -12,6 +12,7 @@ load_dotenv()
 
 QDRANT_URL = os.environ.get("QDRANT_URL", "http://localhost:6333")
 QDRANT_COLLECTION = os.environ.get("QDRANT_COLLECTION", "langchain_docs")
+OLLAMA_BASE_URL = os.environ.get("OLLAMA_BASE_URL", "")
 
 
 class _NomicPrefixedEmbeddings(Embeddings):
@@ -30,14 +31,20 @@ class _NomicPrefixedEmbeddings(Embeddings):
         return self._inner.embed_query(f"search_query: {text}")
 
 
+def _ollama_kwargs(model: str) -> dict:
+    if OLLAMA_BASE_URL and model.startswith("ollama:"):
+        return {"base_url": OLLAMA_BASE_URL}
+    return {}
+
+
 def get_llm():
     model = os.environ.get("LLM_MODEL", "ollama:llama3.2:3b")
-    return init_chat_model(model)
+    return init_chat_model(model, **_ollama_kwargs(model))
 
 
 def get_embeddings():
     model = os.environ.get("EMBEDDING_MODEL", "ollama:nomic-embed-text")
-    embeddings = init_embeddings(model)
+    embeddings = init_embeddings(model, **_ollama_kwargs(model))
     if "nomic-embed-text" in model:
         return _NomicPrefixedEmbeddings(embeddings)
     return embeddings
