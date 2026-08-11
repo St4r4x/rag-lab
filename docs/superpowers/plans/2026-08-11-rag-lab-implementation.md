@@ -390,6 +390,8 @@ print(result['generation'])
 ```
 Expected: a plausible answer mentioning LangGraph's `StateGraph` (grounded in the ingested docs, not empty).
 
+Note (found during Task 4's actual execution): this exact question is a genuinely hard case for a small local embedding model — the docs define `StateGraph` tersely in API-reference/code-sample style rather than discursive prose, so it can still get a "not enough information" refusal even with correct embeddings. That's not itself a failure to fix — it's a known ceiling of this stack, and exactly the scenario Task 5's grade/rewrite/fallback loop exists for. If verifying this step for real, `"How do nodes and edges work in LangGraph?"` is a more representative sanity check (confirmed to retrieve on-topic chunks and produce a grounded answer).
+
 - [ ] **Step 5: Commit**
 
 ```bash
@@ -628,8 +630,8 @@ Run: `.venv/bin/uvicorn api.main:app --port 8000 &`
 Run: `curl -s http://localhost:8000/health`
 Expected: `{"status":"ok"}`
 
-Run: `curl -s -X POST http://localhost:8000/query -H "Content-Type: application/json" -d '{"question": "What is a StateGraph?"}'`
-Expected: JSON with a non-empty `answer` and a `sources` array of doc paths.
+Run: `curl -s -X POST http://localhost:8000/query -H "Content-Type: application/json" -d '{"question": "How do nodes and edges work in LangGraph?"}'`
+Expected: JSON with a non-empty `answer` and a `sources` array of doc paths (this question is confirmed to retrieve on-topic chunks with the current embedding setup — see Task 4's notes on hard-case queries).
 
 Then: `kill %1` to stop the dev server.
 
@@ -688,7 +690,7 @@ if __name__ == "__main__":
 Prerequisite: the FastAPI service from Task 6 running on port 8000.
 
 Run: `.venv/bin/python -m ui.app`
-Expected: prints a local URL (e.g. `http://127.0.0.1:7860`). Open it, ask "What is a StateGraph in LangGraph?", confirm a grounded answer with sources appears in the chat.
+Expected: prints a local URL (e.g. `http://127.0.0.1:7860`). Open it, ask "How do nodes and edges work in LangGraph?", confirm a grounded answer with sources appears in the chat.
 
 - [ ] **Step 4: Commit**
 
