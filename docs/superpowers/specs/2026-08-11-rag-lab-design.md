@@ -76,9 +76,11 @@ rag-lab/
 ### Ingestion (offline, à la demande : `python -m ingestion.ingest`)
 
 1. Récupération des pages doc LangChain + LangGraph : shallow clone
-   (`git clone --depth 1`) des repos `langchain-ai/langchain` et
-   `langchain-ai/langgraph`, puis lecture des fichiers `.md`/`.mdx` sous leurs
-   dossiers `docs/` respectifs — pas de scraper HTML.
+   (`git clone --depth 1`) du repo unifié `langchain-ai/docs`, puis lecture
+   des fichiers `.md`/`.mdx` sous `src/oss/langchain/` et `src/oss/langgraph/`
+   — pas de scraper HTML. (Correction du 2026-08-11 : `langchain-ai/langchain`
+   et `langchain-ai/langgraph` n'ont plus de dossier `docs/` avec du contenu ;
+   la doc des deux frameworks a été consolidée dans ce repo unique.)
 2. Split en chunks (`RecursiveCharacterTextSplitter`, ~500-800 tokens).
 3. Embedding de chaque chunk via `init_embeddings()`.
 4. Upsert dans Qdrant (collection `langchain_docs`), métadonnées = source

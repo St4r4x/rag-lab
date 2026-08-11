@@ -221,22 +221,27 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from config import QDRANT_COLLECTION, QDRANT_URL, get_embeddings
 
-REPOS = {
-    "langchain": "https://github.com/langchain-ai/langchain.git",
-    "langgraph": "https://github.com/langchain-ai/langgraph.git",
+DOCS_REPO_URL = "https://github.com/langchain-ai/docs.git"
+
+# LangChain and LangGraph docs were consolidated into this single repo
+# (langchain-ai/langchain and langchain-ai/langgraph no longer carry their
+# own docs/ folder with markdown content). Verified 2026-08-11.
+SOURCES = {
+    "langchain": "src/oss/langchain",
+    "langgraph": "src/oss/langgraph",
 }
 
 
-def clone_docs(repo_url: str, dest: Path) -> None:
+def clone_docs_repo(dest: Path) -> None:
     subprocess.run(
-        ["git", "clone", "--depth", "1", repo_url, str(dest)],
+        ["git", "clone", "--depth", "1", DOCS_REPO_URL, str(dest)],
         check=True,
         capture_output=True,
     )
 
 
-def load_markdown_files(repo_dir: Path, source: str) -> list[dict]:
-    docs_dir = repo_dir / "docs"
+def load_markdown_files(repo_dir: Path, source: str, subpath: str) -> list[dict]:
+    docs_dir = repo_dir / subpath
     files = list(docs_dir.rglob("*.md")) + list(docs_dir.rglob("*.mdx"))
     pages = []
     for f in files:
@@ -260,10 +265,10 @@ def main() -> None:
     all_chunks: list[dict] = []
 
     with tempfile.TemporaryDirectory() as tmp:
-        for source, repo_url in REPOS.items():
-            dest = Path(tmp) / source
-            clone_docs(repo_url, dest)
-            all_chunks.extend(chunk_pages(load_markdown_files(dest, source)))
+        dest = Path(tmp) / "docs"
+        clone_docs_repo(dest)
+        for source, subpath in SOURCES.items():
+            all_chunks.extend(chunk_pages(load_markdown_files(dest, source, subpath)))
 
     texts = [c["text"] for c in all_chunks]
     metadatas = [{"source": c["source"], "path": c["path"]} for c in all_chunks]
@@ -285,7 +290,7 @@ if __name__ == "__main__":
 - [ ] **Step 3: Run ingestion and verify**
 
 Run: `.venv/bin/python -m ingestion.ingest`
-Expected: prints `Ingested <N> chunks into 'langchain_docs'.` with `N` in the thousands (clones both doc trees).
+Expected: prints `Ingested <N> chunks into 'langchain_docs'.` with `N` in the thousands (one clone of the unified docs repo, both `src/oss/langchain` and `src/oss/langgraph` subtrees).
 
 Run: `curl -s http://localhost:6333/collections/langchain_docs | python3 -m json.tool | grep points_count`
 Expected: `points_count` matches `N` from the previous step.
