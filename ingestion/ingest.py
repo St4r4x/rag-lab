@@ -83,10 +83,6 @@ def main() -> None:
                 )
             all_chunks.extend(chunk_pages(pages))
 
-    # ponytail: from_texts() appends rather than upserting, so re-running this script
-    # duplicates points instead of replacing them. Fine for a one-shot lab ingestion;
-    # add a collection-recreate/upsert-by-id step if re-ingestion becomes routine.
-
     texts = [c["text"] for c in all_chunks]
     metadatas = [{"source": c["source"], "path": c["path"], "url": c["url"]} for c in all_chunks]
 
@@ -96,6 +92,7 @@ def main() -> None:
         metadatas=metadatas,
         url=QDRANT_URL,
         collection_name=QDRANT_COLLECTION,
+        force_recreate=True,
     )
     print(f"Ingested {len(texts)} chunks into '{QDRANT_COLLECTION}'.")
 
