@@ -2,10 +2,10 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from langchain_qdrant import QdrantVectorStore
+from langchain_qdrant import QdrantVectorStore, RetrievalMode
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-from config import QDRANT_COLLECTION, QDRANT_URL, get_embeddings
+from config import QDRANT_COLLECTION, QDRANT_URL, get_embeddings, get_sparse_embeddings
 
 DOCS_REPO_URL = "https://github.com/langchain-ai/docs.git"
 
@@ -69,6 +69,7 @@ def chunk_pages(pages: list[dict]) -> list[dict]:
 
 def main() -> None:
     embeddings = get_embeddings()
+    sparse_embeddings = get_sparse_embeddings()
     all_chunks: list[dict] = []
 
     with tempfile.TemporaryDirectory() as tmp:
@@ -93,6 +94,8 @@ def main() -> None:
         url=QDRANT_URL,
         collection_name=QDRANT_COLLECTION,
         force_recreate=True,
+        sparse_embedding=sparse_embeddings,
+        retrieval_mode=RetrievalMode.HYBRID,
     )
     print(f"Ingested {len(texts)} chunks into '{QDRANT_COLLECTION}'.")
 
