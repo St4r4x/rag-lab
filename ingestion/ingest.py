@@ -51,19 +51,18 @@ def load_markdown_files(repo_dir: Path, source: str, subpath: str) -> list[dict]
     return pages
 
 
-def chunk_pages(pages: list[dict]) -> list[dict]:
+def chunk_document(text: str, source: str, path: str, url: str) -> list[dict]:
     splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=100)
+    return [
+        {"text": chunk, "source": source, "path": path, "url": url}
+        for chunk in splitter.split_text(text)
+    ]
+
+
+def chunk_pages(pages: list[dict]) -> list[dict]:
     chunks = []
     for page in pages:
-        for chunk_text in splitter.split_text(page["text"]):
-            chunks.append(
-                {
-                    "text": chunk_text,
-                    "source": page["source"],
-                    "path": page["path"],
-                    "url": page["url"],
-                }
-            )
+        chunks.extend(chunk_document(page["text"], page["source"], page["path"], page["url"]))
     return chunks
 
 
