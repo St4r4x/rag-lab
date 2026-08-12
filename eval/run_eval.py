@@ -46,19 +46,30 @@ def write_report(results: list[dict]) -> Path:
     return out_path
 
 
-def print_summary(results: list[dict]) -> None:
+def summarize(results: list[dict]) -> dict:
     faithfulness_scores = [r["faithfulness"] for r in results if r["faithfulness"] is not None]
     correctness_scores = [r["correctness"] for r in results if r["correctness"] is not None]
+    return {
+        "count": len(results),
+        "avg_faithfulness": statistics.mean(faithfulness_scores) if faithfulness_scores else None,
+        "faithfulness_scored": len(faithfulness_scores),
+        "avg_correctness": statistics.mean(correctness_scores) if correctness_scores else None,
+        "correctness_scored": len(correctness_scores),
+    }
+
+
+def print_summary(results: list[dict]) -> None:
+    summary = summarize(results)
     print()
-    if faithfulness_scores:
+    if summary["avg_faithfulness"] is not None:
         print(
-            f"Average faithfulness: {statistics.mean(faithfulness_scores):.2f} "
-            f"({len(faithfulness_scores)}/{len(results)} scored)"
+            f"Average faithfulness: {summary['avg_faithfulness']:.2f} "
+            f"({summary['faithfulness_scored']}/{summary['count']} scored)"
         )
-    if correctness_scores:
+    if summary["avg_correctness"] is not None:
         print(
-            f"Average correctness: {statistics.mean(correctness_scores):.2f} "
-            f"({len(correctness_scores)}/{len(results)} scored)"
+            f"Average correctness: {summary['avg_correctness']:.2f} "
+            f"({summary['correctness_scored']}/{summary['count']} scored)"
         )
 
 
