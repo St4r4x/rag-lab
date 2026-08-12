@@ -8,8 +8,8 @@ Le pipeline part d'un graphe simple (`retrieve → generate`) et évolue — sur
 
 - **Orchestration** : LangGraph (`StateGraph`)
 - **LLM / embeddings** : LangChain (`init_chat_model` / `init_embeddings`), switchable Ollama (local) ↔ API via variables d'environnement
-- **Recherche hybride** : Qdrant (dense + sparse BM25 via FastEmbed, fusion RRF native) + reranking par cross-encoder (FastEmbed)
-- **Vector store** : Qdrant (Docker)
+- **Vector store** : Qdrant (Docker), recherche hybride dense + sparse (BM25 via FastEmbed, fusion RRF native)
+- **Reranking** : cross-encoder (FastEmbed)
 - **Évaluation** : harnais LLM-judge maison (faithfulness / correctness) sur 18 questions de référence
 - **API** : FastAPI
 - **UI** : Gradio (4 onglets)
