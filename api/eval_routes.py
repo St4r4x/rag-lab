@@ -5,7 +5,9 @@ import re
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from eval.run_eval import RESULTS_DIR, summarize
+from api.dependencies import get_graph
+from config import get_judge_llm
+from eval.run_eval import RESULTS_DIR, evaluate_one, load_dataset, summarize, write_report
 
 router = APIRouter(prefix="/eval", tags=["eval"])
 
@@ -48,3 +50,12 @@ def get_eval_run(run_id: str):
     if not path.exists():
         raise HTTPException(status_code=404, detail="Run not found")
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+@router.post("/run", response_model=EvalRunSummary)
+def run_eval():
+    judge_llm = get_judge_llm()
+    graph = get_graph()
+    results = [evaluate_one(graph, judge_llm, item) for item in load_dataset()]
+    out_path = write_report(results)
+    return _summary_response(out_path.stem, results)

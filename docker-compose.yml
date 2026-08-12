@@ -27,6 +27,8 @@ services:
     depends_on:
       qdrant:
         condition: service_healthy
+    volumes:
+      - ./eval/results:/app/eval/results
 
   ui:
     build: .
