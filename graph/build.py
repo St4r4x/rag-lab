@@ -4,7 +4,7 @@ from langchain_core.documents import Document
 from graph.state import RAGState
 
 
-def make_retrieve(vectorstore, k=4):
+def make_retrieve(vectorstore, k: int):
     def retrieve(state: RAGState) -> dict:
         docs = vectorstore.similarity_search(state["question"], k=k)
         return {"documents": docs}
@@ -27,20 +27,6 @@ def make_generate(llm):
         return {"generation": response.content}
 
     return generate
-
-
-# Note: build_graph_v1 demonstrates simple graph topology (retrieve → generate),
-# but shares the same hybrid vectorstore via config.get_vectorstore(), so retrieval
-# is not pure dense-only. Simpler topology only; for dense-only baseline, would need
-# a separate non-hybrid vectorstore factory.
-def build_graph_v1(llm, vectorstore):
-    graph = StateGraph(RAGState)
-    graph.add_node("retrieve", make_retrieve(vectorstore))
-    graph.add_node("generate", make_generate(llm))
-    graph.add_edge(START, "retrieve")
-    graph.add_edge("retrieve", "generate")
-    graph.add_edge("generate", END)
-    return graph.compile()
 
 
 MAX_RETRIES = 2

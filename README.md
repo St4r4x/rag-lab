@@ -75,7 +75,7 @@ graph LR
 
 Tout tourne en conteneurs Docker (`docker compose up`) sauf Ollama, volontairement natif — le pattern courant même en production, où les serveurs LLM tournent à part des services applicatifs. `eval/results/` est monté à la fois sur `api` et sur `eval` : un rapport écrit par `docker compose run --rm eval` ou par `POST /eval/run` est visible des deux côtés.
 
-### Graphe LangGraph (`build_graph_v2`)
+### Graphe LangGraph
 
 ```mermaid
 graph LR
@@ -88,7 +88,7 @@ graph LR
     generate --> END
 ```
 
-`grade_documents` juge chaque document individuellement (pas le lot entier) : une réponse partiellement pertinente garde les documents utiles plutôt que de tout jeter. `build_graph_v1` (`retrieve → generate`, k=4, sans rerank ni boucle) reste comme référence naïve pour comparaison — voir le commentaire dans `graph/build.py`.
+`grade_documents` juge chaque document individuellement (pas le lot entier) : une réponse partiellement pertinente garde les documents utiles plutôt que de tout jeter.
 
 ## API
 
@@ -140,7 +140,7 @@ Pour tracer chaque étape du graphe (utile pour comprendre `retrieve → rerank 
 ```
 ingestion/   # clone + chunk + embed (dense+sparse) + upsert la doc LangChain/LangGraph
              # chunk_document() est réutilisé par l'upload de documents (api/documents_routes.py)
-graph/       # StateGraph : v1 (retrieve→generate, référence naïve) → v2 (+ hybrid + rerank + grade/rewrite/loop)
+graph/       # StateGraph : retrieve → rerank (cross-encoder) → grade_documents → generate, avec boucle rewrite_query
 config.py    # LLM / embeddings dense+sparse / vector store hybride / reranker / juge d'évaluation
 api/         # FastAPI : main.py (health/config/query) + eval_routes.py + documents_routes.py + dependencies.py
 ui/          # UI Gradio à 4 onglets : chat_tab / eval_tab / documents_tab / config_tab, assemblés dans app.py
