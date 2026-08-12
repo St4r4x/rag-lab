@@ -5,10 +5,12 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 from qdrant_client import QdrantClient
 
+from api import eval_routes
 from api.dependencies import get_graph
 from config import QDRANT_COLLECTION, QDRANT_URL
 
 app = FastAPI(title="rag-lab")
+app.include_router(eval_routes.router)
 
 
 class QueryRequest(BaseModel):
