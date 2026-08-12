@@ -7,7 +7,7 @@ from qdrant_client import QdrantClient
 
 from api import documents_routes, eval_routes
 from api.dependencies import get_graph
-from config import QDRANT_COLLECTION, QDRANT_URL
+from config import QDRANT_COLLECTION, QDRANT_URL, RERANKER_MODEL, SPARSE_EMBEDDING_MODEL
 
 app = FastAPI(title="rag-lab")
 app.include_router(eval_routes.router)
@@ -49,8 +49,8 @@ def get_config():
     return ConfigResponse(
         llm_model=llm_model,
         embedding_model=os.environ.get("EMBEDDING_MODEL", "ollama:nomic-embed-text"),
-        sparse_embedding_model=os.environ.get("SPARSE_EMBEDDING_MODEL", "Qdrant/bm25"),
-        reranker_model=os.environ.get("RERANKER_MODEL", "Xenova/ms-marco-MiniLM-L-6-v2"),
+        sparse_embedding_model=SPARSE_EMBEDDING_MODEL,
+        reranker_model=RERANKER_MODEL,
         judge_model=judge_model,
         qdrant_url=QDRANT_URL,
         qdrant_collection=QDRANT_COLLECTION,
