@@ -4,3 +4,4 @@ __pycache__/
 .env
 docker-compose.override.yml
 *.egg-info/
+eval/results/

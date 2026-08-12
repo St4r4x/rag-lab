@@ -58,5 +58,21 @@ services:
       qdrant:
         condition: service_healthy
 
+  eval:
+    build: .
+    command: python -m eval.run_eval
+    profiles: ["tools"]
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      QDRANT_URL: http://qdrant:6333
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+
 volumes:
   qdrant_data:

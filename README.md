@@ -22,6 +22,7 @@ ollama pull nomic-embed-text
 
 docker compose up -d qdrant api ui       # Qdrant, API (:8000), UI (:7860)
 docker compose run --rm ingestion        # indexe la doc LangChain/LangGraph (~4000 chunks, quelques minutes) — à lancer une fois
+docker compose run --rm eval               # évalue le pipeline sur 18 questions, écrit un rapport JSON dans eval/results/
 
 # UI sur http://localhost:7860
 ```
@@ -84,6 +85,7 @@ config.py    # LLM / embeddings / vector store
 api/         # FastAPI (POST /query, GET /health)
 ui/          # UI de chat Gradio
 tests/       # test du routing du graphe v2 (seule suite automatisée, décision volontaire)
+eval/        # harnais d'évaluation : 18 Q/A, LLM-judge (faithfulness/correctness), docker compose run --rm eval
 ```
 
 Design complet : [docs/superpowers/specs/2026-08-11-rag-lab-design.md](docs/superpowers/specs/2026-08-11-rag-lab-design.md)
