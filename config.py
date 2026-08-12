@@ -45,6 +45,13 @@ def get_llm():
     return init_chat_model(model, **_ollama_kwargs(model))
 
 
+def get_judge_llm():
+    model = os.environ.get("EVAL_JUDGE_MODEL", "")
+    if not model:
+        return get_llm()
+    return init_chat_model(model, **_ollama_kwargs(model))
+
+
 def get_embeddings():
     model = os.environ.get("EMBEDDING_MODEL", "ollama:nomic-embed-text")
     embeddings = init_embeddings(model, **_ollama_kwargs(model))
